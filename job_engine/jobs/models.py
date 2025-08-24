@@ -1,8 +1,6 @@
 from django.db import models
 from users.models import User
 
-
-
 class Job(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -11,6 +9,12 @@ class Job(models.Model):
     location = models.CharField(max_length=100)
     posted_date = models.DateTimeField(auto_now_add=True)
 
+    posted_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="jobs_posted"
+    )
+    
     def __str__(self):
         return self.title
 
