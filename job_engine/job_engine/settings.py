@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6om)it@1)8u(&wv@p(#t1d6p6@y8=a7*$)0no=@#k-16zz90_q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['job-recommenderapp.onrender.com']
 
