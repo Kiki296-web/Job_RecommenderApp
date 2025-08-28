@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'job_engine.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get("DATABASE_URL")  # Reads from Render's environment variable
+        default=os.environ.get("DATABASE_URL") )# Reads from Render's environment variable
 }
 
 
