@@ -19,10 +19,25 @@ class RegisterView(generics.CreateAPIView):
 # Login (returns token)
 class LoginView(ObtainAuthToken):
     def get(self, request, *args, **kwargs):
-        # Show a simple login form in the browser
+        # Show login form in browser
         return render(request, "users/login.html")
 
     def post(self, request, *args, **kwargs):
+        # If the request is coming from the HTML form
+        if "username" in request.POST and "password" in request.POST:
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                # Create or get token
+                token, _ = Token.objects.get_or_create(user=user)
+                # Redirect to profile page
+                return redirect("/api/users/profile/")
+            else:
+                return render(request, "users/login.html", {"error": "Invalid credentials"})
+
+        # Otherwise, fall back to API token login (for Postman etc.)
         response = super().post(request, *args, **kwargs)
         token = Token.objects.get(key=response.data["token"])
         return Response(
