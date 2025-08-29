@@ -3,13 +3,14 @@ from rest_framework import generics, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import RegisterSerializer, UserSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import CustomUserCreationForm  
 
 class RegisterView(View):
@@ -45,19 +46,24 @@ class LoginView(View):
                 "error": "Invalid username or password"
             })
 
-# Profile (requires authentication)
-class ProfileView(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class ProfileView(LoginRequiredMixin, View):
+    login_url = "login"   # if not logged in, redirect here
 
-    def get_object(self):
-        return self.request.user
+    def get(self, request):
+        return render(request, "users/profile.html", {
+            "user": request.user
+        })
+        
+class LogoutView(View):
+    def get(self, request):
+        logout(request)
+        return redirect("login")
+
     
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def me(request):
-    serializer = UserSerializer(request.user)
-    return Response(serializer.data)
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+# def me(request):
+#     serializer = UserSerializer(request.user)
+#     return Response(serializer.data)
 
 
