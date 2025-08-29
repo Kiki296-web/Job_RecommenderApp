@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import generics, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -9,47 +9,41 @@ from .serializers import RegisterSerializer, UserSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django.views import View
+from .forms import CustomUserCreationForm  
 
+class RegisterView(View):
+    def get(self, request):
+        form = CustomUserCreationForm()
+        return render(request, "users/register.html", {"form": form})
 
-
-# Register new user
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)   # log them in immediately
+            return redirect("profile")   # redirect to profile after registration
+        return render(request, "users/register.html", {"form": form})
 
 # Login (returns token)
-class LoginView(ObtainAuthToken):
-    def get(self, request, *args, **kwargs):
-        # Show login form in browser
+class LoginView(View):
+    def get(self, request):
+        # Show a simple login form in the browser
         return render(request, "users/login.html")
 
-    def post(self, request, *args, **kwargs):
-        # If the request is coming from the HTML form
-        if "username" in request.POST and "password" in request.POST:
-            username = request.POST.get("username")
-            password = request.POST.get("password")
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                # Create or get token
-                token, _ = Token.objects.get_or_create(user=user)
-                # Redirect to profile page
-                return redirect("/api/users/profile/")
-            else:
-                return render(request, "users/login.html", {"error": "Invalid credentials"})
+    def post(self, request):
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
-        # Otherwise, fall back to API token login (for Postman etc.)
-        response = super().post(request, *args, **kwargs)
-        token = Token.objects.get(key=response.data["token"])
-        return Response(
-            {
-                "token": token.key,
-                "user_id": token.user_id,
-                "username": token.user.username,
-            },
-            status=status.HTTP_200_OK,
-        )
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)  
+            return redirect("profile")   # after successful login, go to profile
+        else:
+            return render(request, "users/login.html", {
+                "error": "Invalid username or password"
+            })
 
 # Profile (requires authentication)
 class ProfileView(generics.RetrieveUpdateAPIView):
