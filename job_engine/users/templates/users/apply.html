@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Applied Jobs</title>
+</head>
+<body>
+  {% for job in recommendations %}
+  <div class="job-card">
+    <h3>{{ job.title }}</h3>
+    <p>{{ job.description }}</p>
+    <form method="post" action="{% url 'apply_job' job.id %}">
+      {% csrf_token %}
+      <button type="submit">Apply</button>
+    </form>
+  </div>
+{% endfor %}
+
+</body>
+</html>
