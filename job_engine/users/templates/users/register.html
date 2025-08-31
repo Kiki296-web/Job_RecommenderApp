@@ -1,21 +1,15 @@
-<h2>Register</h2>
-
-<form method="post">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+  <h2>Register</h2>
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-
     <button type="submit">Register</button>
-</form>
+  </form>
 
-{% if form.errors %}
-  <ul style="color:red;">
-    {% for field in form %}
-        {% for error in field.errors %}
-            <li>{{ error }}</li>
-        {% endfor %}
-    {% endfor %}
-    {% for error in form.non_field_errors %}
-        <li>{{ error }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+</body>
+</html>

@@ -1,30 +1,23 @@
 from django.shortcuts import render, redirect
-from rest_framework import generics, permissions
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import RegisterSerializer, UserSerializer
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import CustomUserCreationForm  
+from .forms import CustomRegisterForm
+from django.urls import reverse_lazy
+from django.views.generic import FormView
 
-class RegisterView(View):
-    def get(self, request):
-        form = CustomUserCreationForm()
-        return render(request, "users/register.html", {"form": form})
+class RegisterView(FormView):
+    template_name = "users/register.html"
+    form_class = CustomRegisterForm
+    success_url = reverse_lazy("profile")  # redirect after success
 
-    def post(self, request):
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)   # log users in immediately
-            return redirect("profile")   # redirect to profile after registration
-        return render(request, "users/register.html", {"form": form})
+    def form_valid(self, form):
+        user = form.save()
+        # automatically log the user in after registering
+        login(self.request, user)
+        return super().form_valid(form)
 
 # Login (returns token)
 class LoginView(View):
@@ -60,10 +53,10 @@ class LogoutView(View):
         return redirect("login")
 
     
-# @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
-# def me(request):
-#     serializer = UserSerializer(request.user)
-#     return Response(serializer.data)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def me(request):
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
 
 
