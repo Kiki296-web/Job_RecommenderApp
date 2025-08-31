@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect
+from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
 from .serializers import RegisterSerializer, UserSerializer
+from rest_framework.decorators import api_view, permission_classes
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import CustomRegisterForm
 from django.urls import reverse_lazy
 from django.views.generic import FormView
+
 
 class RegisterView(FormView):
     template_name = "users/register.html"
