@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from .models import User
+from rest_framework.test import APIRequestFactory, force_authenticate
+from jobs.views import JobRecommendationListView
 from .serializers import RegisterSerializer, UserSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -56,6 +58,15 @@ class LogoutView(View):
         logout(request)
         return redirect("login")
 
+def dashboard(request):
+    factory = APIRequestFactory()
+    api_request = factory.get("/api/recommendations/")
+    force_authenticate(api_request, user=request.user)
+    
+    response = JobRecommendationListView.as_view()(api_request)
+    recommendations = response.data  # data from API
+
+    return render(request, "users/dashboard.html", {"recommendations": recommendations})
     
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
